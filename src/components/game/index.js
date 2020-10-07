@@ -16,22 +16,20 @@ export default class Game extends React.Component {
         iterator: 0,
     };
 
-    componentDidMount() {
-        let arr = [];
+    componentWillMount() {
         this.randomSongList = [];
+        let arr = [];
         while (arr.length < songs.length) {
             var r = Math.floor(Math.random() * songs.length) + 1;
             if (arr.indexOf(r) === -1) {
                 arr.push(r);
-                this.randomSongList.push(songs[r]);
-                console.log(songs[r]);
+                this.randomSongList.push(songs[r-1]);
             }
         }
-        console.log(this.randomSongList);
-        setTimeout(this.setTimer(), 1000);
+        setTimeout(this.startTimer(), 1000);
     }
 
-    setTimer = () => {
+    startTimer = () => {
         var countDownDate = new Date();
         countDownDate.setSeconds(countDownDate.getSeconds() + 60);
         let self = this;
@@ -56,15 +54,11 @@ export default class Game extends React.Component {
     };
 
     handleReveal = () => {
-        if (this.state.screen === "dubbed") {
-            this.setState({ screen: "lyrics" });
-        } else if (this.state.screen === "lyrics") {
-            clearInterval(this.intervalId);
-            this.setState({
-                screen: "title",
-                timer: 0,
-            });
-        }
+        clearInterval(this.intervalId);
+        this.setState({
+            screen: "title",
+            timer: 0,
+        });
     };
 
     handleNext = () => {
@@ -73,7 +67,7 @@ export default class Game extends React.Component {
             iterator: this.state.iterator + 1,
         });
         clearInterval(this.intervalId);
-        this.setTimer();
+        this.startTimer();
     };
 
     render() {
@@ -85,31 +79,35 @@ export default class Game extends React.Component {
                         <div className="left-container">
                             <div className="content-container">
                                 {this.state.screen == "dubbed" && (
-                                    <div className="dubbed-lyrics-container">
-                                        {ReactHtmlParser(
-                                            this.randomSongList[
-                                                this.state.iterator
-                                            ]["Dub"].replace(/\n/g, "<br/>")
-                                        )}
-                                    </div>
+                                    <Fragment>
+                                        <div className="song-number">Song No: {this.state.iterator+1}</div>
+                                        <div className="dubbed-lyrics-container">
+                                            {ReactHtmlParser(
+                                                this.randomSongList[
+                                                    this.state.iterator
+                                                ]["Dub"].replace(/\n/g, "<br/>")
+                                            )}
+                                        </div>
+                                    </Fragment>
                                 )}
-                                {this.state.screen == "lyrics" && (
-                                    <div className="actual-lyrics-container">
-                                        {ReactHtmlParser(
-                                            this.randomSongList[
-                                                this.state.iterator
-                                            ]["Song"].replace(/\n/g, "<br/>")
-                                        )}
-                                    </div>
-                                )}
-                                {this.state.screen == "title" && (
-                                    <div className="title-container">
+                               {this.state.screen == "title" && (
+                                   <Fragment>
+                                       <div className="title-container">
                                         {
                                             this.randomSongList[
                                                 this.state.iterator
                                             ]["Name"]
                                         }
-                                    </div>
+                                        </div>
+                                        <div className="actual-lyrics-container">
+                                            {ReactHtmlParser(
+                                                this.randomSongList[
+                                                    this.state.iterator
+                                                ]["Song"].replace(/\n/g, "<br/>")
+                                            )}
+                                        </div>
+                                    
+                                    </Fragment>
                                 )}
                             </div>
                             {this.state.screen !== "title" && (
@@ -119,20 +117,37 @@ export default class Game extends React.Component {
                                         this.handleReveal();
                                     }}
                                 >
-                                    {this.state.screen == "dubbed"
-                                        ? "Show Actual Lyrics"
-                                        : "Reveal Title"}
+                                    Reveal
                                 </button>
                             )}
                             {this.state.screen === "title" && (
-                                <button
-                                    className="next-button"
-                                    onClick={() => {
-                                        this.handleNext();
-                                    }}
-                                >
-                                    Next
-                                </button>
+                                <Fragment>
+                                    {
+                                    this.state.iterator + 1!== this.randomSongList.length ?
+                                        <Fragment>
+                                        <button
+                                            className="next-button"
+                                            onClick={() => {
+                                                this.setState({screen: "dubbed"});  
+                                            }}
+                                        >
+                                            Back
+                                        </button>
+                                        <button
+                                            className="next-button"
+                                            onClick={() => {
+                                                this.handleNext();
+                                            }}
+                                        >
+                                            Next
+                                        </button>
+                                        </Fragment>
+                                        :
+                                        <div className="the-end">
+                                            The End
+                                        </div>
+                                    }
+                                </Fragment>
                             )}
                         </div>
                         <div className="timer-container">
